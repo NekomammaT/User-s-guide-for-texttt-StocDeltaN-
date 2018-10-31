@@ -100,7 +100,7 @@
 
 
 \begin{document}
-\title{User's guide for \texttt{StocDeltaN}}
+\title{User's guide for StocDeltaN \\[-10pt] {- \small\textit{field-space type} -}}
 \date{\today}
 
 \author{Yuichiro Tada}
@@ -117,8 +117,49 @@
 %\tableofcontents
 
 
+\section{Code Overview}
 
-%\section{}
+StocDeltaN is a powerful C++ package to analyze inflationary dynamics and calculate the power spectrum of curvature perturbations with use of the techniques of 
+the stochastic-$\delta N$ approach~\cite{Fujita:2013cna,Vennin:2015hra}. We provide two types of StocDeltaN: one is the full phase-space formulation time without the slow-roll approximation,
+while the other is the field-space formulation omitting the degrees of freedom (d.o.f.) of inflaton momenta under the slow-roll approximation.
+Though the latter, which is labeled by ``\_conf" \Blue{(meaning of ``configuration". to be renamed?)}, sometimes wrong in models where e.g. the slow-roll conditions are violated for an instant,
+it is much more economic computationally thanks to the halved d.o.f. and often enough for leading order calculations.
+In this user's guide, we focus on this field-space type though the usage is naturally extended to the phase-space type.
+
+StocDeltaN consists of two parts as ``source" part containing all required numerical solvers which we provide and ``main" part where users specify the inflationary model
+and the usage of several options like a plotting option with use of Python. Users can write the main code using various sample codes as references.
+
+\newpage
+
+``Source" part in itself is divided into three parts as \texttt{JacobiPDE\_conf.cpp}, \texttt{SRK32\_conf.cpp}, and \texttt{StocDeltaN\_conf.cpp}.
+\texttt{JacobiPDE\_conf.cpp} and \texttt{SRK32\_conf.cpp} implement the solver classes for partial differential equations (PDE) and stochastic differential equations (SDE) respectively.
+Overriding these classes, user can use the numerical solver for general problems beyond the inflationary system if want.
+\texttt{StocdeltaN\_conf.cpp} overrides their classes and defines the specified class as the stochastic-$\delta N$ solver.
+The main code specifies the inflationary model, overriding its functions defining e.g. potential, field-space metric, and so on,
+and then user can use its member functions to analyze the stochastic inflation.
+
+
+\section{Tutorial}
+
+\subsection{Prerequisties}
+
+\begin{itemize}
+\item {\sffamily\bfseries C++ compiler} : We have checked the operation in GNU, Clang, and Intel compiler on Mac system. GNU compiler will be used by default.
+On Mac system, generally Clang compiler is preinstalled and automatically called instead of GNU compiler, so users need not to install other compilers by themselves. 
+By modifying Makefile, one can change the used compiler if wants.
+
+\item {\sffamily\bfseries Make} : For a clear compilation, StocDeltaN employs Make which is a compilation manager. On Mac system, it is easy to introduce GNU Make
+by installing Command Line Tools of Xcode.
+
+\item {\sffamily\bfseries OpenMP (optional)} : 
+
+\item{\sffamily\bfseries Python (optional)} : 
+\end{itemize}
+
+
+
+
+\section{Code Structures}
 
 
 
@@ -137,5 +178,5 @@
 
 
 
-%\bibliography{}
+\bibliography{main}
 \end{document}
