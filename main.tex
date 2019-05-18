@@ -122,11 +122,12 @@
 \newcommand{\Mag}[1]{\textcolor{magenta}{\sffamily #1}}
 \newcommand{\Blue}[1]{\textcolor{blue}{\sffamily #1}}
 \newcommand{\mathblue}[1]{\textcolor{blue}{#1}}
+\newcommand{\YT}[1]{\textcolor{blue}{\sffamily [YT : #1]}}
 
 
 
 \begin{document}
-\title{User's guide for StocDeltaN \\[-10pt] {- \small\textit{field-space type} -}}
+\title{User's guide for \textsc{StocDeltaN}}% \\[-10pt] {- \small\textit{field-space type} -}}
 \date{\today}
 
 %\author{S\'ebastien Renaux-Petel}
@@ -148,25 +149,35 @@
 \maketitle
 %\tableofcontents
 
-\vspace{-30pt}
+%\vspace{-30pt}
 \section{Code Overview}
 
-StocDeltaN is a powerful C++ package to analyze inflationary dynamics and calculate the power spectrum of curvature perturbations with use of the techniques of 
-the stochastic-$\delta N$ approach~\cite{Fujita:2013cna,Vennin:2015hra}. We provide two types of StocDeltaN: one is the full phase-space formulation time without the slow-roll approximation,
+\textsc{StocDeltaN} is a powerful C++ package to analyze inflationary dynamics and calculate the power spectrum of curvature perturbations with use of the techniques of 
+the stochastic-$\delta N$ approach~\cite{Fujita:2013cna,Vennin:2015hra}. 
+This automatically includes resummation effects of superhorizon perturbations, enabling a non-perturbative approach to the curvature perturbation.
+This package is applicable to general multi-field models in non-trivial field spaces expressed by the general Lagrangian~(\ref{eq: Lagrangian}).
+\textsc{StocDeltaN} supports the full phase-space analysis by solving both the inflaton fields $\phi^I$ and their conjugate momenta $\pi_I$, while it automatically switch to the slow-roll field-space analysis if users do not specify the initial condition for the momenta.
+Though the slow-roll approximation may fail in some cases, it is computationally much more economic and often enough for leading order calculations.
+
+\begin{comment}
+We provide two types of StocDeltaN: one is the full phase-space formulation time without the slow-roll approximation,
 while the other is the field-space formulation omitting the degrees of freedom (d.o.f.) of inflaton momenta under the slow-roll approximation.
 Though the latter, which is labeled by ``\_conf" \Blue{(meaning of ``configuration". to be renamed?)}, sometimes wrong in models where e.g. the slow-roll conditions are violated for an instant,
 it is much more economic computationally thanks to the halved d.o.f. and often enough for leading order calculations.
 In this user's guide, we focus on this field-space type though the usage is naturally extended to the phase-space type.
+\end{comment}
 
-StocDeltaN consists of two parts as ``source" part containing all required numerical solvers which we provide and ``main" part where users specify the inflationary model
-and the usage of several options like a plotting option with use of Python. Users can write the main code using various sample codes as references.
+\textsc{StocDeltaN} consists of two parts as the \emph{source} part containing all required numerical solvers which we provide and the \emph{main} part where users specify the inflationary model
+and the usage of several options like a plotting option with use of Python. Users can write the \emph{main} code using various sample codes as references.
 
-``Source" part in itself is divided into three parts as \texttt{JacobiPDE\_conf.cpp}, \texttt{SRK32\_conf.cpp}, and \texttt{StocDeltaN\_conf.cpp}.
-\texttt{JacobiPDE\_conf.cpp} and \texttt{SRK32\_conf.cpp} implement the solver classes for partial differential equations (PDE) and stochastic differential equations (SDE) respectively.
-Overriding these classes, user can use the numerical solver for general problems beyond the inflationary system if want.
-\texttt{StocdeltaN\_conf.cpp} overrides their classes and defines the specified class as the stochastic-$\delta N$ solver.
-The main code specifies the inflationary model, overriding its functions defining e.g. potential, field-space metric, and so on,
+The \emph{source} part in itself is divided into three parts as \texttt{JacobiPDE}, \texttt{SRK32}, and \texttt{StocDeltaN}.
+\texttt{JacobiPDE} and \texttt{SRK32} implement the solver classes for partial differential equations (PDE) and stochastic differential equations (SDE) respectively.
+Overriding these classes, users can employ the numerical solver for general problems beyond the inflationary system if want.
+\texttt{StocDeltaN} overrides their classes and defines the specific class as the stochastic-$\delta N$ solver.
+The \emph{main} code specifies the inflationary model, overriding its functions defining e.g. potential, field-space metric, and so on,
 and then user can use its member functions to analyze the stochastic inflation.
+
+\newpage
 
 
 \section{Tutorials}
@@ -178,19 +189,19 @@ and then user can use its member functions to analyze the stochastic inflation.
 On Mac system, generally Clang compiler is preinstalled and automatically called instead of GNU compiler, so users need not to install other compilers by themselves. 
 By modifying Makefile, one can change the used compiler if wants.
 
-\item {\sffamily\bfseries Make} : For an easy compilation, StocDeltaN employs Make which is a compilation manager. On Mac system, it is easy to introduce GNU Make
+\item {\sffamily\bfseries Make} : For an easy compilation, \textsc{StocDeltaN} employs Make which is a compilation manager. On Mac system, it is easy to introduce GNU Make
 by installing Command Line Tools of Xcode.
 
 \item {\sffamily\bfseries OpenMP (optional)} : The modern concept of processor design places importance on parallelization over multicore rather than processing power on each single core. 
 Multicore processors are implemented even on personal computers and parallelization gets much closer to end users.
-StocDeltaN employs automatic parallelization with use of OpenMP. Many representative compilers like GNU or Intel's one precontain OpenMP, and therefore
+\textsc{StocDeltaN} employs automatic parallelization with use of OpenMP. Many representative compilers like GNU or Intel's one precontain OpenMP, and therefore
 users can make use of its parallelization simply by validating OpenMP option (e.g. -fopenmp for GNU compiler) in Makefile.
 Clang compiler preinstalled on Mac may not support OpenMP, then OpenMP option is commented out in a sample Makefile.
-But we strongly recommend the usage of OpenMP to bring out the full performance of StocDeltaN particularly in calculation on cluster computers.
+But we strongly recommend the usage of OpenMP to bring out the full performance of \textsc{StocDeltaN} particularly in calculation on cluster computers.
 
-\item{\sffamily\bfseries Python \& Matplotlib (optional)} : Though StocDeltaN exports all relevant data as DAT files, one can also use the automatic plotting system
-with use of Matplotlib which is Python's plotting library. Piping data to python, StocDeltaN can plot the obtained results if Python and Matplotlib have been installed
-on a users' machine. Mac system usually preinstalled Python, and therefore one can easily install Matplotlib as well by using pip, e.g.
+\item{\sffamily\bfseries Python \& Matplotlib (optional)} : Though \textsc{StocDeltaN} exports all relevant data as DAT files, one can also use the automatic plotting system
+with use of Matplotlib which is Python's plotting library. Piping data to python, \textsc{StocDeltaN} can plot the obtained results if Python and Matplotlib have been installed
+on a user's machine. Mac system has usually preinstalled Python, and therefore one can easily install Matplotlib as well by using Pip Installs Packages, e.g.
 \begin{lstlisting}[language = bash, numbers = none]
 $ pip install matplotlib
 \end{lstlisting}
@@ -201,15 +212,15 @@ $ pip install matplotlib
 \subsection{First Exercise}
 
 Practice makes perfect. 
-So let us start by downloading the source codes from our GitHub page \url{https://github.com/NekomammaT/StocDeltaN_dist} and play with attached samples.
+Let us start by downloading the source codes from our GitHub page \url{https://github.com/NekomammaT/StocDeltaN_dist} and play with attached samples.
 Using Make in the \textit{sample} directory completes the compilation of the sample codes:
 \begin{lstlisting}[language = bash, numbers = none]
 $ cd sample
 $ make
 \end{lstlisting}
-By default the double chaotic model is compiled. Then running the executable file \textit{double\_chaotic\_conf}, one obtains some results like as follows.
+By default the field-space double chaotic model (\emph{double\_chaotic\_SR.cpp}) is compiled. Then running the executable file, one obtains some results like as follows.
 \begin{lstlisting}[language = bash, numbers = none]
-$ ./double_chaotic_conf
+$ ./double_chaotic_SR
 [xi, xf, xmin, xmax]:
 [13, 3.54334e-08, -5.06876e-07, 13]
 [13, 1.40077, 1.40077, 13]
@@ -220,46 +231,46 @@ Vi = 8.5543209876543225e-09,  Vf = 1.2111996327249413e-12
 \end{lstlisting}
 If you could do this without any error, the machine environment is properly set up and you are ready to execute a main calculation.
 
-One edits the following parts of \textit{double\_chaotic\_conf.cpp}. Simply by commenting out \texttt{sdn.sample()} and validating \texttt{sdn.solve()} instead as 
-indicated in List.~\ref{list: double_chaotic_conf_plot},
+One edits the following parts of \textit{double\_chaotic\_SR.cpp}. Simply by commenting out \texttt{sdn.sample()} and validating \texttt{sdn.solve()} instead as 
+indicated in List.~\ref{list: double_chaotic_SR_plot} \YT{modify comments},
 one can fully solve the system.
-Re-Making and running \textit{double\_chaotic\_conf}, one obtains the analyzation results in 
-\textit{Mn\_double\_chaotic\_conf.dat}, \textit{traj\_double\_chaotic\_conf.dat},
-and \textit{calP\_double\_chaotic\_conf.dat}, which contain the data as shown in Lists.~\ref{list: Mn_double_chaotic_conf.dat}--\ref{list: calP_double_chaotic_conf.dat}.
+Re-Making and running \textit{double\_chaotic\_SR}, one obtains the analyzation results in 
+\textit{Mn\_double\_chaotic\_SR.dat}, \textit{traj\_double\_chaotic\_SR.dat},
+and \textit{calP\_double\_chaotic\_SR.dat}, which contain the data as shown in Lists.~\ref{list: Mn_double_chaotic_SR.dat}--\ref{list: calP_double_chaotic_SR.dat}.
 
-\begin{lstlisting}[language = C++, caption=\textit{sample/double\_chaotic\_conf.cpp}, label = list: double_chaotic_conf_plot, firstnumber = 77]
+\begin{lstlisting}[language = C++, caption=\textit{sample/double\_chaotic\_SR.cpp}, label = list: double_chaotic_SR_plot, firstnumber = 77]
 	//sdn.sample(); // obtain 1 sample path
 	//sdn.sample_plot(); // plot that sample path 
 	
 	sdn.solve(); // solve PDE & SDE and obtain power spectrum  
-	//sdn.f1_plot(); // show plot of <N>
-	//sdn.g2_plot(); // show plot of <delta N^2> 
+	//sdn.f_plot(0); // show plot of <N>
+	//sdn.f_plot(1); // show plot of <delta N^2> 
 	//sdn.calP_plot(); // show plot of power spectrum of zeta
 \end{lstlisting}
 
 \vfill
 
 \begin{lstlisting}[numbers = none, mathescape, caption={\textit{Mn\_}$\braket{\text{model name}}$\textit{.dat} : 
-contour data of $\calM_n=\braket{\calN^n}$ and $\calC_2=\braket{\delta\calN^2}$}, label = list: Mn_double_chaotic_conf.dat]
-$\phi^1$ $\phi^2$ $\cdots$ $\calM_1$ $\calC_2$
+contour data of $\calM_n=\braket{\calN^n}$ and $\calC_2=\braket{\delta\calN^2}$}, label = list: Mn_double_chaotic_SR.dat]
+$\phi^1$ $\phi^2$ $\cdots$ $\pi_1$ $\pi_2$ $\cdots$ $\calM_1$ $\calC_2$
 \end{lstlisting}
 
 \begin{lstlisting}[numbers = none, mathescape, caption={\textit{traj\_}$\braket{\text{model name}}$\textit{.dat} : trajectory data of one sample path}, 
-label = list: traj_double_chaotic_conf.dat]
-$N$ $\phi^1$ $\phi^2$ $\cdots$
+label = list: traj_double_chaotic_SR.dat]
+$N$ $\phi^1$ $\phi^2$ $\cdots$ $\pi_1$ $\pi_2$ $\cdots$
 \end{lstlisting}
 
 \begin{lstlisting}[numbers = none, mathescape, caption={\textit{calP\_}$\braket{\text{model name}}$\textit{.dat} : data related to curvature perturbation}, 
-label = list: calP_double_chaotic_conf.dat]
+label = list: calP_double_chaotic_SR.dat]
 $\braket{\calN}$ $\braket{\delta\calN^2}$ $\calP_\zeta$
 \end{lstlisting}
 
 If you have installed Python and Matplotlib already, the plotting option is quite useful.
-Validating \texttt{sdn.f1\_plot()}, \texttt{sdn.g2\_plot()}, and \texttt{sdn.calP\_plot()} shown in List.~\ref{list: double_chaotic_conf_plot},
-StocDeltaN pipes the data to Python and plots contours of $\calM_1=\braket{\calN}$ and $\calC_2=\braket{\delta\calN^2}$ 
+Validating \texttt{sdn.f\_plot(0)}, \texttt{sdn.f\_plot(1)}, and \texttt{sdn.calP\_plot()} shown in List.~\ref{list: double_chaotic_SR_plot},
+\textsc{StocDeltaN} pipes the data to Python and plots contours of $\calM_1=\braket{\calN}$ and $\calC_2=\braket{\delta\calN^2}$ 
 and the power spectrum of curvature perturbations $\calP_\zeta$ as shown in
-Fig.~\ref{fig: double_chaotic_conf}. The plots are also saved as \textit{N\_double\_chaotic\_conf.pdf}, \textit{dN2\_double\_chaotic\_conf.pdf}, and
-\textit{calP\_double\_chaotic\_conf.pdf}.
+Fig.~\ref{fig: double_chaotic_conf}. The plots are also saved as \textit{N\_double\_chaotic\_SR.pdf}, \textit{dN2\_double\_chaotic\_SR.pdf}, and
+\textit{calP\_double\_chaotic\_SR.pdf}.
 
 \begin{figure}
 	\centering
@@ -277,22 +288,21 @@ Fig.~\ref{fig: double_chaotic_conf}. The plots are also saved as \textit{N\_doub
 			\includegraphics[width=\hsize]{figs/calP_double_chaotic_conf.pdf}
 		\end{minipage}
 	\end{tabular}
-	\caption{\textit{N\_double\_chaotic\_conf.pdf}, \textit{dN2\_double\_chaotic\_conf.pdf}, and \textit{calP\_double\_chaotic\_conf.pdf} from left to right.
+	\caption{\textit{N\_double\_chaotic\_SR.pdf}, \textit{dN2\_double\_chaotic\_SR.pdf}, and \textit{calP\_double\_chaotic\_SR.pdf} from left to right.
 	Red lines in the left and middle panels show one realization of sample paths.}
 	\label{fig: double_chaotic_conf}
 \end{figure}
 
 To switch the analyzed model, one modifies \textit{Makefile} in the \textit{sample} directory. The \texttt{MODEL} parameter in \textit{Makefile} 
 as can be seen in List.~\ref{list: Makefile} controls the analyzed model and one can calculate other models by changing this parameter.
-We preprovide other three models, \textit{chaotic\_conf}, \textit{hilltop\_conf}, and \textit{hybrid\_conf}, as samples.
+We preprovided five other models, \textit{chaotic\_SR} \textit{chaotic}, \textit{hilltop\_SR}, \textit{hilltop}, and \textit{hybrid\_SR}, as samples.
 One can use preferred C++ compiler by changing \texttt{CXX} parameter. The default setting is GNU compiler \texttt{g++} (On Mac system, it basically calls 
 Clang compiler instead which may not support OpenMP. That is why we comment out OpenMP option \texttt{-fopenmp} by default).
 If you use a compiler supporting OpenMP, you may use it by validating the OpenMP option \texttt{-fopenmp} (or \texttt{-qopenmp} for Intel compiler).
 
 \begin{lstlisting}[language = bash, caption={\textit{sample/Makefile}}, label=list: Makefile]
-MODEL = double_chaotic_conf
+MODEL = double_chaotic_SR
 SOURCE = ../source
-PHASECONF = conf
 
 CXX := g++
 CXXFLAGS := -std=c++11 -O3 #-fopenmp
@@ -300,41 +310,42 @@ CXXFLAGS := -std=c++11 -O3 #-fopenmp
 
 
 
-\subsection{Go beyond samples}
+\subsection{Beyond samples}
 
 Of course the final goal is not playing with sample codes but solving your models. Though ultimately the understanding of the whole code structure is required
-to get a full command of StocDeltaN, we recommend to take advantage of sample codes as much as possible. That is, if you want to solve single-field models,
-\textit{chaotic\_conf.cpp} or \textit{hilltop\_conf.cpp} would be helpful, while \textit{double\_chaotic\_conf.cpp} or \textit{hybrid\_conf.cpp} can be used for two-field models.
-To adopt your model to StocDeltaN, you change the code in mainly two sences: one is the inflaton's system described by the Lagrangian, and the other is 
+to get a full command of \textsc{StocDeltaN}, we recommend to take advantage of sample codes as much as possible. That is, if you want to solve single-field models in the slow-roll limit,
+\textit{chaotic\_SR.cpp} or \textit{hilltop\_SR.cpp} would be helpful, while \textit{double\_chaotic\_SR.cpp} or \textit{hybrid\_SR.cpp} can be used for two-field models. \textit{chaotic.cpp} or \textit{hilltop.cpp} would be a reference for the phase-space approach.
+To adopt your model to \textsc{StocDeltaN}, you change the code in mainly two senses: one is the inflaton's system described by the Lagrangian, and the other is 
 the numerical parameters used for practical calculations. We guide the readers in this way below.
 
 \subsubsection{Lagrangian}
 
-StocDeltaN supports general multi-scalar models in general relativity. Such models are parameterized the following scalar part Lagrangian.
-\bae{
+\textsc{StocDeltaN} supports general multi-scalar models in general relativity. Such models are parameterized the following scalar part Lagrangian.
+\bae{\label{eq: Lagrangian}
 	\calL=-\frac{1}{2}G_{IJ}(\phi)\partial_\mu\phi^I\partial^\mu\phi^J-V(\phi).
 }
 Here $I$ and $J$ label the scalar fields and $G_{IJ}$ represents the inflaton's field space metric which can be curved in general.
 
-This Langrangian is set in StocDeltaN by the corresponding functions in a main code represented by e.g. \textit{double\_chaotic\_conf.cpp}
-as shown in List.~\ref{list: double_chaotic_conf_lag}.
+This Langrangian is set in \textsc{StocDeltaN} by the corresponding functions in a main code represented by e.g. \textit{double\_chaotic\_SR.cpp}
+as shown in List.~\ref{list: double_chaotic_SR_lag}.
 Each function represent:
 \begin{itemize}
 \item \texttt{V(X)} : the inflaton potential $V(\phi)$.
 \item \texttt{VI(X,I)} : its derivative $\partial_{\phi^I}V(\phi)$.
 \item \texttt{metric(X,I,J)} : the field space metric $G_{IJ}(\phi)$.
 \item \texttt{inversemetric(X,I,J)}: its inverse $G^{IJ}(\phi)$.
-\item \texttt{affine(X,I,J,K)} : the Christoffel symbol corresponding to the field space metric, $\Gamma^I_JK(\phi)=\frac{1}{2}G^{IL}(G_{JL,K}+G_{KL,J}-G_{JK,L})$.
+\item \texttt{affine(X,I,J,K)} : the Christoffel symbol corresponding to the field space metric, $\Gamma^I_{JK}(\phi)=\frac{1}{2}G^{IL}(G_{JL,K}+G_{KL,J}-G_{JK,L})$.
+\item \texttt{derGamma(X,I,J,K,L)} : its derivative $\partial_{\phi^L}\Gamma^I_{JK}$.
 \end{itemize}
-\textit{double\_chaotic\_conf.cpp} studies the double mass-term inflation with a flat field space as
+\textit{double\_chaotic\_SR.cpp} studies the double mass-term inflation with a flat field space as
 \bae{
 	V=\frac{1}{2}M^2\phi^2+\frac{1}{2}m^2\psi^2, \qquad G_{IJ}=\delta_{IJ}.
 }
 In the code the list \texttt{X} represents the scalar fields as $\texttt{X[0]}=\phi$ and $\texttt{X[1]}=\psi$, then the functions are defined as shown 
-in List.~\ref{list: double_chaotic_conf_lag}. The potential parameters $M$ and $m$ are defined at the top of the code as \texttt{MPHI} and \texttt{MPSI} to be easily modified.
+in List.~\ref{list: double_chaotic_SR_lag} \YT{modify the line number and comments}. The potential parameters $M$ and $m$ are defined at the top of the code as \texttt{MPHI} and \texttt{MPSI} to be easily modified.
 Therefore one can adopt the model interested simply by rewriting this part.
 
-\begin{lstlisting}[language = C++, caption={\textit{sample/double\_chaotic\_conf.cpp}}, label=list: double_chaotic_conf_lag, firstnumber = 20]
+\begin{lstlisting}[language = C++, caption={\textit{sample/double\_chaotic\_SR.cpp}}, label=list: double_chaotic_SR_lag, firstnumber = 20]
 // ---------- potential parameter ----------
 #define MPHI (1e-5)
 #define MPSI (MPHI/9.)
@@ -373,6 +384,11 @@ double StocDeltaN::inversemetric(vector<double> &X, int I, int J) // G^IJ
 }
 
 double StocDeltaN::affine(vector<double> &X, int I, int J, int K) // \Gamma^I_JK
+{
+  return 0;
+}
+
+double StocDeltaN::derGamma(vector<double> &X, int I, int J, int K, int L)
 {
   return 0;
 }
