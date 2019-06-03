@@ -156,7 +156,7 @@
 the stochastic-$\delta N$ approach~\cite{Fujita:2013cna,Vennin:2015hra}. 
 This automatically includes resummation effects of superhorizon perturbations, enabling a non-perturbative approach to the curvature perturbation.
 This package is applicable to general multi-field models in non-trivial field spaces expressed by the general Lagrangian~(\ref{eq: Lagrangian}).
-\textsc{StocDeltaN} supports the full phase-space analysis by solving both the inflaton fields $\phi^I$ and their conjugate momenta $\pi_I$, while it automatically switch to the slow-roll field-space analysis if users do not specify the initial condition for the momenta.
+\textsc{StocDeltaN} supports the full phase-space analysis by solving both the inflaton fields $\phi^I$ and their conjugate momenta $\pi_I$, while it automatically switch to the slow-roll field-space analysis if users do not specify the calculation box for the momenta.
 Though the slow-roll approximation may fail in some cases, it is computationally much more economic and often enough for leading order calculations.
 
 \begin{comment}
@@ -271,6 +271,7 @@ Validating \texttt{sdn.f\_plot(0)}, \texttt{sdn.f\_plot(1)}, and \texttt{sdn.cal
 and the power spectrum of curvature perturbations $\calP_\zeta$ as shown in
 Fig.~\ref{fig: double_chaotic_conf}. The plots are also saved as \textit{N\_double\_chaotic\_SR.pdf}, \textit{dN2\_double\_chaotic\_SR.pdf}, and
 \textit{calP\_double\_chaotic\_SR.pdf}.
+See Sec.~\ref{sec: StocDeltaN} for more details about the plotting functions.
 
 \begin{figure}
 	\centering
@@ -318,6 +319,7 @@ to get a full command of \textsc{StocDeltaN}, we recommend to take advantage of 
 To adopt your model to \textsc{StocDeltaN}, you change the code in mainly two senses: one is the inflaton's system described by the Lagrangian, and the other is 
 the numerical parameters used for practical calculations. We guide the readers in this way below.
 
+
 \subsubsection{Lagrangian}
 
 \textsc{StocDeltaN} supports general multi-scalar models in general relativity. Such models are parameterized the following scalar part Lagrangian.
@@ -325,6 +327,10 @@ the numerical parameters used for practical calculations. We guide the readers i
 	\calL=-\frac{1}{2}G_{IJ}(\phi)\partial_\mu\phi^I\partial^\mu\phi^J-V(\phi).
 }
 Here $I$ and $J$ label the scalar fields and $G_{IJ}$ represents the inflaton's field space metric which can be curved in general.
+The conjugate momenta for the phase-space approach are defined by \YT{$G_{IJ}\dif{\phi^J}{N}$ is better?}
+\bae{
+    \pi_I=G_{IJ}\dot{\phi}^J. 
+}
 
 This Langrangian is set in \textsc{StocDeltaN} by the corresponding functions in a main code represented by e.g. \textit{double\_chaotic\_SR.cpp}
 as shown in List.~\ref{list: double_chaotic_SR_lag}.
@@ -397,24 +403,33 @@ double StocDeltaN::derGamma(vector<double> &X, int I, int J, int K, int L)
 
 \subsubsection{lattice size}
 
-The other important parameter for StocDeltaN is the lattice size defining the inflationary region.
-StocDeltaN adopts the orthogonal box with arbitrary variable lattice steps as shown in Fig.~\ref{fig: box}.
+The other important parameter for \textsc{StocDeltaN} is the lattice size defining the inflationary region.
+\textsc{StocDeltaN} adopts the orthogonal box with arbitrary variable lattice steps as shown in Fig.~\ref{fig: box}.
 The box can include the non-inflationary region where the corresponding energy density is lower than the threshold $\rho_c$
 shown by the blue shade in Fig.~\ref{fig: box}, other than the yellow inflationary region $\Omega$.
-The box is parametrized two-dimensional list containing the field values of lattice sites in each scalar direction, i.e.,
-\begin{lstlisting}[numbers = none, mathescape]
-{{$\phi_0$, $\phi_1$, $\phi_2$, $\cdots$, $\phi_\text{max}$}, {$\psi_0$, $\psi_1$, $\psi_2$, $\cdots$, $\psi_\text{max}$}}
-\end{lstlisting}
-in the case of Fig.~\ref{fig: box}.
+Note that the boundaries of $\Omega$ other than the end of inflation $\rho_c$ are unphysical. \textsc{StocDeltaN} sets the reflecting boundary condition for them by default but users should choose the boundary position so that the relevant region is sufficiently far from those unphysical boundaries.
 
-\bfe{width=0.9\hsize}{figs/box.pdf}{Schematic image of the calculable lattice in StocDeltaN. Users declare each field value 
+The box is parametrized by 3-dimensional list containing the field values of lattice sites in each scalar direction, i.e.,
+\begin{lstlisting}[numbers = none, mathescape]
+{{{$\phi_0$, $\phi_1$, $\phi_2$, $\cdots$, $\phi_\text{max}$}, {$\psi_0$, $\psi_1$, $\psi_2$, $\cdots$, $\psi_\text{max}$}}}
+\end{lstlisting}
+for the SR field-space approach, while the lattice sites for the momenta as
+\begin{lstlisting}[numbers = none, mathescape]
+{{{$\phi_0$, $\phi_1$, $\phi_2$, $\cdots$, $\phi_\text{max}$}, {$\psi_0$, $\psi_1$, $\psi_2$, $\cdots$, $\psi_\text{max}$}},
+ {{$\pi_{\phi0}$, $\pi_{\phi1}$, $\pi_{\phi2}$, $\cdots$, $\pi_{\phi\text{max}}$}, {$\pi_{\psi0}$, $\pi_{\psi1}$, $\pi_{\psi2}$, $\cdots$, $\pi_{\psi\text{max}}$}}}
+\end{lstlisting}
+for the full phase-space approach
+in the case of Fig.~\ref{fig: box}.
+\textsc{StocDeltaN} automatically switches the approach, according to the presence of the lattice for momenta.
+
+\bfe{width=0.9\hsize}{figs/box.pdf}{Schematic image of the calculable lattice in \textsc{StocDeltaN}. Users declare each field value 
 $\phi_0$, $\phi_1$, $\phi_2$, $\cdots$, $\phi_\text{max}$, and $\psi_0$, $\psi_1$, $\psi_2$, $\cdots$, $\psi_\text{max}$.}{fig: box}
 
-In \textit{double\_chaotic\_conf.cpp}, the box boundary is defined by \texttt{PHIMIN}, \texttt{PHIMAX}, \texttt{PSIMIN}, and \texttt{PSIMAX}
+In \textit{double\_chaotic\_SR.cpp}, the box boundary is defined by \texttt{PHIMIN}, \texttt{PHIMAX}, \texttt{PSIMIN}, and \texttt{PSIMAX}
 with the constant lattice steps \texttt{HPHI} and \texttt{HPSI}, declared at the top of the code as shown in List.~\ref{list: double_chaotic_conf_box}.
-The concrete two-dimensional list is created in the latter part as \texttt{sitepack}.
+The concrete 3-dimensional list is created in the latter part as \texttt{sitepack}.
 
-\begin{lstlisting}[language = C++, caption={\textit{sample/double\_chaotic\_conf.cpp}}, label=list: double_chaotic_conf_box, firstnumber = 6]
+\begin{lstlisting}[language = C++, caption={\textit{sample/double\_chaotic\_SR.cpp}}, label=list: double_chaotic_conf_box, firstnumber = 6]
 // ---------- box size & step h ------------
 #define PHIMIN -5
 #define PHIMAX 20
@@ -428,12 +443,13 @@ The concrete two-dimensional list is created in the latter part as \texttt{sitep
 	// ---------- set box step h ---------------
 	double h = HPHI, sitev = PHIMIN;
 	vector<double> site;
-	vector< vector<double> > sitepack;
+	vector< vector<double> > xsite;
+	vector< vector< vector<double> > > sitepack;
 	while (sitev <= PHIMAX) {
 		site.push_back(sitev);
 		sitev += h;
 	}
-	sitepack.push_back(site);
+	xsite.push_back(site);
 	site.clear();
 
 	h = HPSI, sitev = PSIMIN;
@@ -441,17 +457,20 @@ The concrete two-dimensional list is created in the latter part as \texttt{sitep
 		site.push_back(sitev);
 		sitev += h;
 	}
-	sitepack.push_back(site);
+	xsite.push_back(site);
 	site.clear();
+	
+	sitepack.push_back(xsite);
+	xsite.clear();
 	// -----------------------------------------
 \end{lstlisting}
 
 One might prefer the logarithmic lattice to the constant step size. In such a case, it is useful to determine the step size by the field value itself.
-\textit{hybrid\_conf.cpp} employs this procedure in $\psi$'s direction.
-In line 70 shown in List.~\ref{list: hybrid_conf_box}, the step size in $\psi$'s direction is determined by its $\psi$-value itself with a fraction \texttt{HPSIOPSI}
+\textit{hybrid\_SR.cpp} employs this procedure in $\psi$'s direction.
+In line \Blue{70} shown in List.~\ref{list: hybrid_conf_box}, the step size in $\psi$'s direction is determined by its $\psi$-value itself with a fraction \texttt{HPSIOPSI}
 and the lower bound \texttt{HPSIMIN}. Therefore the lattice step size becomes smaller for the smaller value of $|\psi|$, resulting in the logarithmic scale.
 
-\begin{lstlisting}[language = C++, caption={\textit{sample/hybrid\_conf.cpp}}, label=list: hybrid_conf_box, firstnumber = 6]
+\begin{lstlisting}[language = C++, caption={\textit{sample/hybrid\_SR.cpp}}, label=list: hybrid_conf_box, firstnumber = 6]
 // ---------- box size & step h ------------
 #define PHIMIN 0.1409
 #define PHIMAX 0.142
@@ -466,12 +485,13 @@ and the lower bound \texttt{HPSIMIN}. Therefore the lattice step size becomes sm
 	// ---------- set box step h ---------------
 	double h = HPHI, sitev = PHIMIN;
 	vector<double> site;
-	vector< vector<double> > sitepack;
+	vector< vector<double> > xsite;
+	vector< vector< vector<double> > > sitepack;
 	while (sitev <= PHIMAX) {
 		site.push_back(sitev);
 		sitev += h;
 	}
-	sitepack.push_back(site);
+	xsite.push_back(site);
 	site.clear();
 
 	sitev = PSIMIN;
@@ -481,18 +501,72 @@ and the lower bound \texttt{HPSIMIN}. Therefore the lattice step size becomes sm
 		site.push_back(sitev);
 		sitev += h;	
 	}
-	sitepack.push_back(site);
+	xsite.push_back(site);
 	site.clear();
+	
+	sitepack.push_back(xsite);
+	xsite.clear();
 	// ------------------------------------------
 \end{lstlisting}
 
+\textit{chaotic.cpp} shown in List.~\ref{list: chaotic_box} will be helpful for the box declaration in the phase-space approach. The logarithmic scale is adopted for the momentum.
+In any case, \texttt{site} corresponds with the most inner list, \texttt{xsite}/\texttt{xpsite} assembles the fields box or the momenta box, and \texttt{sitepack} is the full box list in our codes, but any other implementation also works as long as the final list is consistently configured as indicated in the beginning of this subsection.
+
+\begin{lstlisting}[language = C++, caption={\textit{sample/chaotic.cpp}}, label=list: chaotic_box, firstnumber = 6]
+// ---------- box size & step h ------------
+#define XMIN 0
+#define XMAX 15
+#define PMIN (-1e-4)
+#define PMAX 0
+#define HX 0.01
+#define HPMIN (1e-6)
+#define HPOV (1./20)
+// -----------------------------------------
+\end{lstlisting}
+\begin{lstlisting}[language = C++, firstnumber = 57]
+    // ---------- set box step h ---------------
+    double h = HX, sitev = XMIN;
+    vector<double> site;
+    vector< vector<double> > xpsite;
+    vector< vector< vector<double> > > sitepack;
+    while(sitev <= XMAX) {
+        site.push_back(sitev);
+        sitev += h;
+    }
+    xpsite.push_back(site);
+    sitepack.push_back(xpsite);
+    site.clear();
+    xpsite.clear();
+
+    sitev = PMIN;
+    while (sitev <= PMAX) {
+        h = max(fabs(sitev)*HPOV,HPMIN);
+
+        site.push_back(sitev);
+        sitev += h;
+    }
+    xpsite.push_back(site);
+    sitepack.push_back(xpsite);
+    site.clear();
+    xpsite.clear();
+    // ------------------------------------------
+\end{lstlisting}
+
+
 \subsubsection{other parameters}
 
-Other parameters are set at the top of the code and directly called for the declaration of the StocDeltaN class except for the initial condition for sample trajectories
-(\texttt{PHIIN} and \texttt{PSIIN} in this case) as shown in List.~\ref{list: double_chaotic_conf_otherparams}.
+Other parameters are set at the top of the code and gathered into the parameter list \texttt{params} which is called for the declaration of the \texttt{StocDeltaN} class. The initial condition for the inflationary trajectories is declared by \texttt{xpi} in the form of
+\begin{lstlisting}[numbers = none, mathescape]
+{{$\phi_i$, $\psi_i$}}    
+\end{lstlisting}
+or
+\begin{lstlisting}[numbers = none, mathescape]
+{{$\phi_i$, $\psi_i$}, {$\pi_{\phi i}$, $\pi_{\psi i}$}}
+\end{lstlisting}
+List.~\ref{list: double_chaotic_SR_otherparams} shows the sample code. The parameter list \texttt{params} consists of the maximal step number and tolerance for the PDE solver, the order of e-folds moment to be calculated, the energy surface of the end of inflation, the number of the independent noise degrees of freedom, e-folds time step for the trajectory calculation, the maximum and step of e-folds for the power spectrum calculation, and the recursion number of sample trajectories in the stochastic-$\delta N$ approach. The detailed explanation of these parameters can be found in the next section.
 
-\begin{lstlisting}[language = C++, caption={\textit{sample/double\_chaotic\_conf.cpp}}, label=list: double_chaotic_conf_otherparams, firstnumber = 4]
-#define MODEL "double_chaotic_conf" // model name
+\begin{lstlisting}[language = C++, caption={\textit{sample/double\_chaotic\_SR.cpp}}, label=list: double_chaotic_SR_otherparams, firstnumber = 4]
+#define MODEL "double_chaotic_SR" // model name
 \end{lstlisting}
 \begin{lstlisting}[language = C++, firstnumber = 15]
 // ---------- for PDE ----------------------
@@ -516,15 +590,44 @@ Other parameters are set at the top of the code and directly called for the decl
 // -----------------------------------------
 \end{lstlisting}
 \begin{lstlisting}[language = C++, firstnumber = 72]
-	vector<double> xi = {PHIIN,PSIIN}; // set i.c. for sample paths
+    vector<double> params = {MAXSTEP,TOL,2,RHOC,(double)sitepack[0].size(),TIMESTEP,NMAX,DELTAN,RECURSION};
 
-	StocDeltaN sdn(MODEL,sitepack,RHOC,xi,0,MAXSTEP,TOL,RECURSION,
-		TIMESTEP,NMAX,DELTAN); // declare the system	
+    vector< vector<double> > xpi = {{PHIIN,PSIIN}}; // set i.c. for inflationary trajectories
+
+    StocDeltaN sdn(MODEL,sitepack,xpi,0,params); // declare the system
 \end{lstlisting}
 
 
 
 \section{Code Structures}
+
+Though the previous Tutorial section is basically enough for light users, one might desire to customize the codes for his/her own problem.
+In this section, the detailed structures of three parts (\texttt{JacobiPDE}, \texttt{SRK32}, and \texttt{StocDeltaN}) are described, suggesting possible arranges.
+
+
+\subsection{\texttt{JacobiPDE}}
+
+\texttt{JacobiPDE} is the partial differential equation (PDE) solver with use of the Jacobi method.
+
+description of Jacobi method
+
+member function
+
+
+
+\subsection{\texttt{SRK32}}
+
+description of SRK32
+
+member function
+
+
+\subsection{\texttt{StocDeltaN}}\label{sec: StocDeltaN}
+
+description of stochastic-$\delta N$
+
+member function
+
 
 
 %\acknowledgments
