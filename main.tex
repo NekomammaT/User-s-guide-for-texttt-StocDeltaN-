@@ -277,15 +277,15 @@ Fig.~\ref{fig: double_chaotic_conf}. The plots are also saved as \textit{N\_doub
 	\begin{tabular}{ccc}
 		\begin{minipage}{0.33\hsize}
 			\centering
-			\includegraphics[width=\hsize]{figs/N_double_chaotic_conf.pdf}
+			\includegraphics[width=\hsize]{figs/N_double_chaotic_SR.pdf}
 		\end{minipage}
 		\begin{minipage}{0.33\hsize}
 			\centering
-			\includegraphics[width=\hsize]{figs/dN2_double_chaotic_conf.pdf}
+			\includegraphics[width=\hsize]{figs/dN2_double_chaotic_SR.pdf}
 		\end{minipage}
 		\begin{minipage}{0.33\hsize}
 			\centering
-			\includegraphics[width=\hsize]{figs/calP_double_chaotic_conf.pdf}
+			\includegraphics[width=\hsize]{figs/calP_double_chaotic_SR.pdf}
 		\end{minipage}
 	\end{tabular}
 	\caption{\textit{N\_double\_chaotic\_SR.pdf}, \textit{dN2\_double\_chaotic\_SR.pdf}, and \textit{calP\_double\_chaotic\_SR.pdf} from left to right.
@@ -295,7 +295,7 @@ Fig.~\ref{fig: double_chaotic_conf}. The plots are also saved as \textit{N\_doub
 
 To switch the analyzed model, one modifies \textit{Makefile} in the \textit{sample} directory. The \texttt{MODEL} parameter in \textit{Makefile} 
 as can be seen in List.~\ref{list: Makefile} controls the analyzed model and one can calculate other models by changing this parameter.
-We preprovided five other models, \textit{chaotic\_SR} \textit{chaotic}, \textit{hilltop\_SR}, \textit{hilltop}, and \textit{hybrid\_SR}, as samples.
+We preprovided four other models, \textit{chaotic\_SR} \textit{chaotic}, \textit{hilltop\_SR}, and \textit{hybrid\_SR}, as samples.
 One can use preferred C++ compiler by changing \texttt{CXX} parameter. The default setting is GNU compiler \texttt{g++} (On Mac system, it basically calls 
 Clang compiler instead which may not support OpenMP. That is why we comment out OpenMP option \texttt{-fopenmp} by default).
 If you use a compiler supporting OpenMP, you may use it by validating the OpenMP option \texttt{-fopenmp} (or \texttt{-qopenmp} for Intel compiler).
@@ -314,7 +314,7 @@ CXXFLAGS := -std=c++11 -O3 #-fopenmp
 
 Of course the final goal is not playing with sample codes but solving your models. Though ultimately the understanding of the whole code structure is required
 to get a full command of \textsc{StocDeltaN}, we recommend to take advantage of sample codes as much as possible. That is, if you want to solve single-field models in the slow-roll limit,
-\textit{chaotic\_SR.cpp} or \textit{hilltop\_SR.cpp} would be helpful, while \textit{double\_chaotic\_SR.cpp} or \textit{hybrid\_SR.cpp} can be used for two-field models. \textit{chaotic.cpp} or \textit{hilltop.cpp} would be a reference for the phase-space approach.
+\textit{chaotic\_SR.cpp} or \textit{hilltop\_SR.cpp} would be helpful, while \textit{double\_chaotic\_SR.cpp} or \textit{hybrid\_SR.cpp} can be used for two-field models. \textit{chaotic.cpp} would be a reference for the phase-space approach.
 To adopt your model to \textsc{StocDeltaN}, you change the code in mainly two senses: one is the inflaton's system described by the Lagrangian, and the other is 
 the numerical parameters used for practical calculations. We guide the readers in this way below.
 
