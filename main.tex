@@ -232,17 +232,17 @@ Vi = 8.5543209876543225e-09,  Vf = 1.2111996327249413e-12
 If you could do this without any error, the machine environment is properly set up and you are ready to execute a main calculation.
 
 One edits the following parts of \textit{double\_chaotic\_SR.cpp}. Simply by commenting out \texttt{sdn.sample()} and validating \texttt{sdn.solve()} instead as 
-indicated in List.~\ref{list: double_chaotic_SR_plot} \YT{modify comments},
+indicated in List.~\ref{list: double_chaotic_SR_plot},
 one can fully solve the system.
 Re-Making and running \textit{double\_chaotic\_SR}, one obtains the analyzation results in 
 \textit{Mn\_double\_chaotic\_SR.dat}, \textit{traj\_double\_chaotic\_SR.dat},
 and \textit{calP\_double\_chaotic\_SR.dat}, which contain the data as shown in Lists.~\ref{list: Mn_double_chaotic_SR.dat}--\ref{list: calP_double_chaotic_SR.dat}.
 
-\begin{lstlisting}[language = C++, caption=\textit{sample/double\_chaotic\_SR.cpp}, label = list: double_chaotic_SR_plot, firstnumber = 77]
+\begin{lstlisting}[language = C++, caption=\textit{sample/double\_chaotic\_SR.cpp}, label = list: double_chaotic_SR_plot, firstnumber = 82]
 	//sdn.sample(); // obtain 1 sample path
-	//sdn.sample_plot(); // plot that sample path 
+	//sdn.sample_plot(); // plot obtained sample path 
 	
-	sdn.solve(); // solve PDE & SDE and obtain power spectrum  
+	sdn.solve(); // solve PDE & SDE to obtain power spectrum  
 	//sdn.f_plot(0); // show plot of <N>
 	//sdn.f_plot(1); // show plot of <delta N^2> 
 	//sdn.calP_plot(); // show plot of power spectrum of zeta
@@ -296,7 +296,7 @@ See Sec.~\ref{sec: StocDeltaN} for more details about the plotting functions.
 
 To switch the analyzed model, one modifies \textit{Makefile} in the \textit{sample} directory. The \texttt{MODEL} parameter in \textit{Makefile} 
 as can be seen in List.~\ref{list: Makefile} controls the analyzed model and one can calculate other models by changing this parameter.
-We preprovided four other models, \textit{chaotic\_SR} \textit{chaotic}, \textit{hilltop\_SR}, and \textit{hybrid\_SR}, as samples.
+We preprovided four other models, \textit{chaotic\_SR}, \textit{chaotic}, \textit{hilltop\_SR}, and \textit{hybrid\_SR}, as samples.
 One can use preferred C++ compiler by changing \texttt{CXX} parameter. The default setting is GNU compiler \texttt{g++} (On Mac system, it basically calls 
 Clang compiler instead which may not support OpenMP. That is why we comment out OpenMP option \texttt{-fopenmp} by default).
 If you use a compiler supporting OpenMP, you may use it by validating the OpenMP option \texttt{-fopenmp} (or \texttt{-qopenmp} for Intel compiler).
@@ -348,7 +348,7 @@ Each function represent:
 	V=\frac{1}{2}M^2\phi^2+\frac{1}{2}m^2\psi^2, \qquad G_{IJ}=\delta_{IJ}.
 }
 In the code the list \texttt{X} represents the scalar fields as $\texttt{X[0]}=\phi$ and $\texttt{X[1]}=\psi$, then the functions are defined as shown 
-in List.~\ref{list: double_chaotic_SR_lag} \YT{modify the line number and comments}. The potential parameters $M$ and $m$ are defined at the top of the code as \texttt{MPHI} and \texttt{MPSI} to be easily modified.
+in List.~\ref{list: double_chaotic_SR_lag}. The potential parameters $M$ and $m$ are defined at the top of the code as \texttt{MPHI} and \texttt{MPSI} to be easily modified.
 Therefore one can adopt the model interested simply by rewriting this part.
 
 \begin{lstlisting}[language = C++, caption={\textit{sample/double\_chaotic\_SR.cpp}}, label=list: double_chaotic_SR_lag, firstnumber = 20]
@@ -358,8 +358,8 @@ Therefore one can adopt the model interested simply by rewriting this part.
 // -----------------------------------------
 \end{lstlisting}
 
-\begin{lstlisting}[language = C++, firstnumber = 93]
-// ---------- Lagrangian params. and diff. coeff.  X[0]=phi, X[1]=psi ----------
+\begin{lstlisting}[language = C++, firstnumber = 99]
+// ---------- Lagrangian params. X[0]=phi, X[1]=psi ----------
 
 double StocDeltaN::V(vector<double> &X)
 {
@@ -394,7 +394,7 @@ double StocDeltaN::affine(vector<double> &X, int I, int J, int K) // \Gamma^I_JK
   return 0;
 }
 
-double StocDeltaN::derGamma(vector<double> &X, int I, int J, int K, int L)
+double StocDeltaN::derGamma(vector<double> &X, int I, int J, int K, int L) //  \partial_L \Gamma^I_JK
 {
   return 0;
 }
@@ -413,7 +413,7 @@ The box is parametrized by 3-dimensional list containing the field values of lat
 \begin{lstlisting}[numbers = none, mathescape]
 {{{$\phi_0$, $\phi_1$, $\phi_2$, $\cdots$, $\phi_\text{max}$}, {$\psi_0$, $\psi_1$, $\psi_2$, $\cdots$, $\psi_\text{max}$}}}
 \end{lstlisting}
-for the SR field-space approach, while the lattice sites for the momenta as
+for the SR field-space approach, while it also includes the lattice sites for the momenta as
 \begin{lstlisting}[numbers = none, mathescape]
 {{{$\phi_0$, $\phi_1$, $\phi_2$, $\cdots$, $\phi_\text{max}$}, {$\psi_0$, $\psi_1$, $\psi_2$, $\cdots$, $\psi_\text{max}$}},
  {{$\pi_{\phi0}$, $\pi_{\phi1}$, $\pi_{\phi2}$, $\cdots$, $\pi_{\phi\text{max}}$}, {$\pi_{\psi0}$, $\pi_{\psi1}$, $\pi_{\psi2}$, $\cdots$, $\pi_{\psi\text{max}}$}}}
@@ -435,12 +435,12 @@ The concrete 3-dimensional list is created in the latter part as \texttt{sitepac
 #define PHIMAX 20
 #define PSIMIN 0
 #define PSIMAX 20
-#define HPHI (1e-1)
-#define HPSI (1e-1)
+#define HPHI 0.1
+#define HPSI 0.1
 // -----------------------------------------
 \end{lstlisting}
 \begin{lstlisting}[language = C++, firstnumber = 52]
-	// ---------- set box step h ---------------
+	// ---------- set box ---------------
 	double h = HPHI, sitev = PHIMIN;
 	vector<double> site;
 	vector< vector<double> > xsite;
@@ -462,7 +462,7 @@ The concrete 3-dimensional list is created in the latter part as \texttt{sitepac
 	
 	sitepack.push_back(xsite);
 	xsite.clear();
-	// -----------------------------------------
+	// ----------------------------------
 \end{lstlisting}
 
 One might prefer the logarithmic lattice to the constant step size. In such a case, it is useful to determine the step size by the field value itself.
@@ -481,8 +481,8 @@ and the lower bound \texttt{HPSIMIN}. Therefore the lattice step size becomes sm
 #define HPSIMIN (1e-10)
 // -----------------------------------------
 \end{lstlisting}
-\begin{lstlisting}[language = C++, firstnumber = 57]
-	// ---------- set box step h ---------------
+\begin{lstlisting}[language = C++, firstnumber = 58]
+	// ---------- set box ---------------
 	double h = HPHI, sitev = PHIMIN;
 	vector<double> site;
 	vector< vector<double> > xsite;
@@ -506,7 +506,7 @@ and the lower bound \texttt{HPSIMIN}. Therefore the lattice step size becomes sm
 	
 	sitepack.push_back(xsite);
 	xsite.clear();
-	// ------------------------------------------
+	// -----------------------------------
 \end{lstlisting}
 
 \textit{chaotic.cpp} shown in List.~\ref{list: chaotic_box} will be helpful for the box declaration in the phase-space approach. The logarithmic scale is adopted for the momentum.
@@ -523,8 +523,8 @@ In any case, \texttt{site} corresponds with the most inner list, \texttt{xsite}/
 #define HPOV (1./20)
 // -----------------------------------------
 \end{lstlisting}
-\begin{lstlisting}[language = C++, firstnumber = 57]
-    // ---------- set box step h ---------------
+\begin{lstlisting}[language = C++, firstnumber = 52]
+    // ---------- set box ---------------
     double h = HX, sitev = XMIN;
     vector<double> site;
     vector< vector<double> > xpsite;
@@ -549,7 +549,7 @@ In any case, \texttt{site} corresponds with the most inner list, \texttt{xsite}/
     sitepack.push_back(xpsite);
     site.clear();
     xpsite.clear();
-    // ------------------------------------------
+    // -----------------------------------
 \end{lstlisting}
 
 
@@ -581,7 +581,7 @@ List.~\ref{list: double_chaotic_SR_otherparams} shows the sample code. The param
 #define RECURSION 100 // recursion for power spectrum
 #define PHIIN 13 // i.c. for phi
 #define PSIIN 13 // i.c. for psi
-#define TIMESTEP (1e-2) // time step: delta N
+#define TIMESTEP (1e-2) // time step : delta N
 // -----------------------------------------
 
 // ---------- for power spectrum -----------
@@ -589,8 +589,8 @@ List.~\ref{list: double_chaotic_SR_otherparams} shows the sample code. The param
 #define NMAX 80 // calc. PS for 0--NMAX e-folds
 // -----------------------------------------
 \end{lstlisting}
-\begin{lstlisting}[language = C++, firstnumber = 72]
-    vector<double> params = {MAXSTEP,TOL,2,RHOC,(double)sitepack[0].size(),TIMESTEP,NMAX,DELTAN,RECURSION};
+\begin{lstlisting}[language = C++, firstnumber = 76]
+    vector<double> params = {MAXSTEP,TOL,2,RHOC,(double)sitepack[0].size(),TIMESTEP,NMAX,DELTAN,RECURSION}; // set paramters
 
     vector< vector<double> > xpi = {{PHIIN,PSIIN}}; // set i.c. for inflationary trajectories
 
