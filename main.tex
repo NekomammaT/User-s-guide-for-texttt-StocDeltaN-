@@ -182,7 +182,7 @@ and then user can use its member functions to analyze the stochastic inflation.
 
 \section{Tutorials}
 
-\subsection{Prerequisties}
+\subsection{Prerequisite}
 
 \begin{itemize}
 \item {\sffamily\bfseries C++ compiler} : We have checked the operation in GNU, Clang, and Intel compiler on Mac system. GNU compiler will be used by default.
@@ -322,7 +322,7 @@ the numerical parameters used for practical calculations. We guide the readers i
 
 \subsubsection{Lagrangian}
 
-\textsc{StocDeltaN} supports general multi-scalar models in general relativity. Such models are parameterized the following scalar part Lagrangian.
+\textsc{StocDeltaN} supports general multi-scalar models in general relativity. Such models are parametrized the following scalar part Lagrangian.
 \bae{\label{eq: Lagrangian}
 	\calL=-\frac{1}{2}G_{IJ}(\phi)\partial_\mu\phi^I\partial^\mu\phi^J-V(\phi).
 }
@@ -608,6 +608,11 @@ In this section, the detailed structures of three parts (\texttt{JacobiPDE}, \te
 \subsection{\texttt{JacobiPDE}}
 
 \texttt{JacobiPDE} is the partial differential equation (PDE) solver with use of the Jacobi method.
+The Jacobi method is a recursive procedure.
+The next step value of each site is determined by the nearest sites so that they locally satisfy the discretized PDE, and then all site values are updated simultaneously. To describe this method in detail, let us reillustrate the lattice box in Fig.~\ref{}
+
+\bfe{width=0.9\hsize}{figs/lattice.pdf}{}{fig: lattice}
+
 
 description of Jacobi method
 
