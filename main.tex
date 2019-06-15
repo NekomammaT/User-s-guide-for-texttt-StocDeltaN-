@@ -200,7 +200,7 @@ Clang compiler preinstalled on Mac may not support OpenMP, then OpenMP option is
 But we strongly recommend the usage of OpenMP to bring out the full performance of \textsc{StocDeltaN} particularly in calculation on cluster computers.
 
 \item{\sffamily\bfseries Python \& Matplotlib (optional)} : Though \textsc{StocDeltaN} exports all relevant data as DAT files, one can also use the automatic plotting system
-with use of Matplotlib which is Python's plotting library. Piping data to python, \textsc{StocDeltaN} can plot the obtained results if Python and Matplotlib have been installed
+with use of Matplotlib which is Python's plotting library. Piping data to Python, \textsc{StocDeltaN} can plot the obtained results if Python and Matplotlib have been installed
 on a user's machine. Mac system has usually preinstalled Python, and therefore one can easily install Matplotlib as well by using Pip Installs Packages, e.g.
 \begin{lstlisting}[language = bash, numbers = none]
 $ pip install matplotlib
@@ -609,14 +609,132 @@ In this section, the detailed structures of three parts (\texttt{JacobiPDE}, \te
 
 \texttt{JacobiPDE} is the partial differential equation (PDE) solver with use of the Jacobi method.
 The Jacobi method is a recursive procedure.
-The next step value of each site is determined by the nearest sites so that they locally satisfy the discretized PDE, and then all site values are updated simultaneously. To describe this method in detail, let us reillustrate the lattice box in Fig.~\ref{fig: lattice}.
+The next step value of each site is determined by the nearest sites so that they locally satisfy the discretized PDE, and then all site values are updated simultaneously. 
 
 \bfe{width=0.9\hsize}{figs/lattice.pdf}{}{fig: lattice}
 
+To describe this method in detail, let us reillustrate the lattice box in Fig.~\ref{fig: lattice}. 
+The site point in the direction-$I$ is parametrized by its small character $i$.
+The index $I$ is naturally generalized for momenta in a phase-space case.
+We first mention the boundary condition.
+The inflationary region $\Omega$ has two types of boundaries: the end of inflation $\rho_c$ and the artificial box boundary $\partial\Omega$ due to the finiteness of the box.
+The end of inflation surface is determined by a certain value $\rho_c$ of the inflatons' energy density since the last surface should be a uniform-density slice in the $\delta N$ formalism~\cite{Lyth:2004gb} which we use.
+The calculables in the stochastic-$\delta N$ is moments of the backward e-folds $\calN$ from this end of inflation surface, and therefore they are set to zero on this boundary. Practically it is enough to fix the site values to zero if the corresponding energy density is equal to/lower than $\rho_c$ (blue region):
+\bae{
+    u_{ij}=0, \quad \text{(fixed and not updated)} \quad \text{for $\rho_{ij}\leq\rho_c$}.
+}
+On the other hand we choose the reflecting condition for the artificial boundary $\partial\Omega$~\cite{Pattison:2017mbe}.
+That is, the imaginary sites are set one-step outside of $\Omega$ and their values are equal to those of their reflective position sites to update the boundary values.
+These boundary conditions are controlled by the member function \texttt{BoundaryCondition()} and can be overwritten in \texttt{StocDeltaN} if users want (see also the \texttt{StocDeltaN} subsection~\ref{sec: StocDeltaN}).
 
-description of Jacobi method
+Under these boundary conditions, each site value is updated according to the discretized PDE.
+PDEs in general can be expressed as (see Eqs.~(\ref{eq: D in field space}), (\ref{eq: D in phase space}) for concrete forms of $D^I$, $D^{IJ}$, and $C$)
+\bae{\label{eq: PDE}
+    \left(D^I(\phi)\partial_I+\frac{1}{2}D^{IJ}(\phi)\partial_I\partial_J\right)u(\phi)=C(\phi).
+}
+At the leading order, the first derivative can be discretized either by
+\bae{\label{eq: discretization first der}
+    \partial_Iu\simeq\frac{u_{i+1}-u}{h_i}\simeq\frac{u-u_{i-1}}{h_{i-1}}\simeq\frac{u_{i+1}-u_{i-1}}{h_i+h_{i-1}}.
+}
+Here we only show the relevant indices.
+Second derivatives reads, depending on whether the direction is the same or not,
+\bae{
+    \begin{cases}
+        \dps
+        \partial_I^2u\simeq2\frac{u_{i+1}h_{i-1}+u_{i-1}h_i-u(h_i+h_{i-1})}{h_ih_{i-1}(h_i+h_{i-1})}, \\[10pt]
+        \dps
+        \partial_I\partial_Ju\simeq\frac{u_{i+1,j+1}-u_{i+1,j-1}-u_{i-1,j+1}+u_{i-1,j-1}}{(h_i+h_{i-1})(h_j+h_{j-1})}, & (I\neq J).
+    \end{cases}
+}
+Regarding the first derivative, one recalls that the physical boundary is set only on the end of inflation surface and therefore the PDE should be solved mainly in a backward way from this surface.
+Because $D^I$ roughly corresponds with $-V^I$, $u_{i+1}$ should be chosen at the site where $D^I>0$ (labeled $i_+$), and $u_{i-1}$ otherwise (labeled $i_-$).
+Therefore the left-hand side of PDE~(\ref{eq: PDE}) is discretized as
+\bae{
+    &\hspace{-30pt}\left(D^I\partial_I+\frac{1}{2}D^{IJ}\partial_I\partial_J\right)u \nonumber \\
+    \simeq&\sum_{i_+}D^I\frac{u_{i_++1}-u}{h_{i_+}}+\sum_{j_-}D^J\frac{u-u_{j_--1}}{h_{j_--1}}
+    +\sum_ID^{II}\frac{u_{i+1}h_{i-1}+u_{i-1}h_i-u(h_i+h_{i-1})}{h_ih_{i-1}(h_i+h_{i-1})} \nonumber \\
+    &+\frac{1}{2}\sum_{I\neq J}D^{IJ}\frac{u_{i+1,j+1}-u_{i+1,j-1}-u_{i-1,j+1}+u_{i-1,j-1}}{(h_i+h_{i-1})(h_j+h_{j-1})} \nonumber \\
+    =&\left(-\sum_{i_+}\frac{D^I}{h_{i_+}}+\sum_{j_-}\frac{D^J}{h_{j_--1}}-\sum_I\frac{D^{II}}{h_ih_{i-1}}\right)u
+    \nonumber \\
+    &-\left(-\sum_{i_+}D^I\frac{u_{i_++1}}{h_{i_+}}+\sum_{j_-}D^J\frac{u_{j_--1}}{h_{j_--1}}-\sum_ID^{II}\frac{u_{i+1}h_{i-1}+u_{i-1}h_i}{h_ih_{i-1}(h_i+h_{i-1})} \right. \nonumber \\
+    &\qquad\left.-\frac{1}{2}\sum_{I\neq J}D^{IJ}\frac{u_{i+1,j+1}-u_{i+1,j-1}-u_{i-1,j+1}+u_{i-1,j-1}}{(h_i+h_{i-1})(h_j+h_{j-1})}\right) \nonumber \\
+    =:&Au-B.
+}
+Therefore the site value $u$ is updated by 
+\bae{
+    u=\frac{B+C}{A}.
+}
+Note that the right-hand side is independent of the corresponding site value $u$, so that this is indeed an explicit equation. 
 
-member function
+Though the updated value locally satisfies the discretized PDE, it is not the global solution.
+Instead of solving the local equations over whole sites simultaneously in an algebraic way,
+one can expect these local solutions to converge to the global one by updating recursively.
+In the Jacobi method, the next value is evaluated for all sites first, and then they are updated simultaneously.
+The convergence is assessed the error function defined by
+\bae{\label{eq: err}
+    \mathrm{err}=\frac{|\Delta u|}{|u|},
+}
+where $\Delta u$ represent the difference between the updated and previous value and their absolute values are defined by their root mean square.
+When this error becomes smaller than some preset tolerance, the local solution is assumed to represent the global one well.
+
+In \textsc{StocDeltaN}, the following PDEs are solved by default:
+\bae{\label{eq: PDE for M1 and C2}
+    \bce{
+        \dps
+        \left(D^I\partial_I+\frac{1}{2}D^{IJ}\partial_I\partial_J\right)\calM_1=-1, \\[10pt]
+        \dps
+        \left(D^I\partial_I+\frac{1}{2}D^{IJ}\partial_I\partial_J\right)\calC_2=-D^{IJ}(\partial_I\calM_1)(\partial_J\calM_1),
+    }
+}
+where
+\bae{\label{eq: D in field space}
+    D^I=-\frac{V^I}{V}-\frac{1}{2}\Gamma^I_{JK}D^{JK}, \qquad D^{IJ}=\frac{V}{12\pi^2}G^{IJ},
+}
+in the field-space approach while
+\bae{\label{eq: D in phase space}
+    \bce{
+        \dps
+        D_\phi^I=\frac{\pi^I}{H}-\frac{1}{2}\Gamma^I_{JK}D_{\phi\phi}^{JK}, \\[10pt] 
+        \dps
+        D_{\pi I}=-3\pi_I-\frac{V_I}{H}+\Gamma^S_{IJ}\frac{\pi_S\pi^J}{H}+\frac{1}{2}(\Gamma^S_{IJ,K}-\Gamma^R_{JK}\Gamma^S_{IR}-\Gamma^R_{IJ}\Gamma^S_{KR})\pi_SD_{\phi\phi}{}^{JK}+\Gamma^J_{IK}D_{\phi\pi}{}^K{}_J, \\[10pt]
+        \dps
+        D_{\phi\phi}{}^{IJ}=\left(\frac{H}{2\pi}\right)G^{IJ}, \qquad D_{\phi\pi}{}^I{}_J=\Gamma^K_{JL}\pi_KD_{\phi\phi}{}^{IL}, \qquad D_{\pi\pi IJ}=\Gamma^K_{IL}\Gamma^M_{JN}\pi_K\pi_MD_{\phi\phi}{}^{LN}.
+    }
+}
+We used $\Mpl=1$ unit. $\calM_1$ and $\calC_2$ correspond with $\braket{\calN}$ and $\braket{\delta\calN^2}$ respectively (see Ref.~\cite{StocDeltaN} for details).
+Note that the PDE for $\calC_2$~(\ref{eq: PDE for M1 and C2}) has derivatives also in the right-hand side. We adopt the last expression of Eq.~(\ref{eq: discretization first der}) to discretize them.
+
+Let us finally make descriptions of the member functions declared in \textit{JacobiPDE.hpp}
+\begin{itemize}
+    \item \texttt{JacobiPDE(Site,Params)} : 
+    Constructor setting initial conditions for the considered system. By default \texttt{JacobiPDE} requires four parameters: \texttt{Params[0]} is the maximum recursion number for the Jacobi method, \texttt{Params[1]} is the tolerance for the convergence error~(\ref{eq: err}), \texttt{Params[2]} specifies how many moments of $\calN$ are calculated ($\texttt{Params[2]}=1$ solves only $\calM_1$ while $\texttt{Params[2]}=2$ solves both $\calM_2$ and $\calC_2$), and \texttt{Params[3]} is the energy density of the end of inflation $\rho_c$.
+    \item \texttt{PDE\_1step(num,func)} : 
+    \item \texttt{PDE\_solve(func)} : 
+    \item \texttt{Ind2No(index)} : 
+    \item \texttt{No2Ind(num,xp,I)} : 
+    \item \texttt{No2PSV(num,xp,I)} : 
+    \item \texttt{ceilXP(xp,I,psv)} : 
+    \item \texttt{Interpolation\_f(psv,func)} : 
+    \item \texttt{export\_fg(filename)} : 
+\end{itemize}
+The following functions are virtual so that users can easily overwrite them in an overriding class like \texttt{StocDeltaN}.
+In \textsc{StocDeltaN} case for example, if one wants to redefine them, validate their declarations in \textit{StocDeltaN.hpp} and redefine them in \textit{StocDeltaN.cpp} or one's main code (refer to \texttt{V}, \texttt{VI}, \texttt{metric}, \texttt{inversemetric}, \texttt{affine}, and \texttt{derGamma} in the sample codes).
+\begin{itemize}
+    \item \texttt{H(X,P)} : 
+    \item \texttt{V(X)} : 
+    \item \texttt{VI(X,I)} : 
+    \item \texttt{metric(X,I,J)} : 
+    \item \texttt{inversemetric(X,I,J)} : 
+    \item \texttt{affine(X,I,J,K)} : 
+    \item \texttt{derGamma(X,I,J,K,L)} : 
+    \item \texttt{DI(xp,I,psv)} : 
+    \item \texttt{DIJ(xpI,I,xpJ,J,psv)} : 
+    \item \texttt{CC(num,psv,func)} : 
+    \item \texttt{BoundaryCondition()} : 
+    \item \texttt{EndSurface(psv)} : 
+\end{itemize}
+
+
 
 
 
